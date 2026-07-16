@@ -1,36 +1,357 @@
-:root { font-family: Inter, ui-rounded, system-ui, sans-serif; color: #382f27; background: #fff8e9; }
+:root {
+  font-family: Inter, ui-rounded, "SF Pro Rounded", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #382f27;
+  background: #fff8e9;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
 * { box-sizing: border-box; }
-html, body, #root { width: 100%; height: 100%; margin: 0; overflow: hidden; }
-button { font: inherit; border: 0; cursor: pointer; touch-action: manipulation; }
-.app-shell { height: 100dvh; display: grid; grid-template-rows: auto auto minmax(0,1fr) auto; gap: 10px; padding: 12px; background: radial-gradient(circle at 10% 10%, rgba(255,211,104,.22), transparent 28%), radial-gradient(circle at 90% 92%, rgba(73,174,255,.14), transparent 27%), #fff8e9; user-select: none; }
-.topbar, .materials, .letter-picker { display: flex; align-items: center; gap: 10px; }
-.topbar { min-height: 58px; justify-content: space-between; padding: 0 6px; }
-.brand { display: flex; align-items: center; gap: 11px; }
-.brand-mark { width: 48px; height: 48px; display: grid; place-items: center; border-radius: 16px; background: #ffcf57; box-shadow: 0 4px 0 #d9a72e; font: 900 22px/1 "Comic Sans MS", sans-serif; }
-h1 { margin: 0; font-size: clamp(1.05rem,2.2vw,1.55rem); }
-.brand p { margin: 4px 0 0; color: #766859; font-size: .85rem; }
-.save-status { padding: 8px 11px; border-radius: 999px; background: rgba(255,255,255,.72); color: #7b6c5c; font-size: .82rem; white-space: nowrap; }
-.save-status.is-saved { color: #21875d; font-weight: 800; }
-.materials, .letter-picker { min-height: 70px; padding: 9px 11px; border: 1px solid rgba(117,98,73,.15); border-radius: 21px; background: rgba(255,255,255,.68); box-shadow: 0 8px 24px rgba(105,79,42,.08); }
-.toolbar-title { padding: 0 4px; color: #7b6b59; font-size: .82rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
-.material-button, .tool-button { min-height: 50px; display: inline-flex; align-items: center; justify-content: center; gap: 9px; padding: 0 15px; border-radius: 16px; color: #473c32; background: #f3ede3; font-weight: 800; box-shadow: inset 0 -3px 0 rgba(0,0,0,.08); }
-.material-swatch { width: 30px; height: 30px; border: 2px solid rgba(255,255,255,.8); border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,.2); }
-.material-water .material-swatch { background: radial-gradient(circle at 68% 28%, rgba(255,255,255,.95) 0 8%, transparent 9%), repeating-radial-gradient(ellipse at 45% 55%, #8de8ff 0 4px, #20b5ed 5px 8px, #087ac1 9px 12px); }
-.material-stone .material-swatch { background: linear-gradient(135deg, transparent 42%, #292827 43% 48%, transparent 49%), radial-gradient(circle at 30% 34%, #c3baac 0 11%, transparent 12%), radial-gradient(circle at 72% 68%, #494641 0 13%, transparent 14%), #777168; }
-.material-volcano .material-swatch { background: linear-gradient(to bottom, #fff06a 0 16%, #ff8b1b 17% 34%, #d93f19 35% 49%, #765047 50% 70%, #302d2a 71%); }
-.material-water.is-selected { background: #bfe8ff; box-shadow: inset 0 -4px 0 #52b3e8, 0 0 0 3px white, 0 0 0 6px #52b3e8; }
-.material-stone.is-selected { background: #d6c9b7; box-shadow: inset 0 -4px 0 #8c7d69, 0 0 0 3px white, 0 0 0 6px #8c7d69; }
-.material-volcano.is-selected { background: #ffb78c; box-shadow: inset 0 -4px 0 #e45422, 0 0 0 3px white, 0 0 0 6px #e45422; }
-.history-actions { display: flex; gap: 8px; margin-left: auto; }
+
+html,
+body,
+#root {
+  width: 100%;
+  min-width: 320px;
+  height: 100%;
+  min-height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+button {
+  font: inherit;
+  border: 0;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible {
+  outline: 4px solid rgba(40, 122, 214, .38);
+  outline-offset: 3px;
+}
+
+.app-shell {
+  height: 100dvh;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  gap: 8px;
+  padding: 10px;
+  background:
+    radial-gradient(circle at 10% 10%, rgba(255, 211, 104, .22), transparent 28%),
+    radial-gradient(circle at 90% 92%, rgba(73, 174, 255, .14), transparent 27%),
+    #fff8e9;
+  user-select: none;
+}
+
+.topbar,
+.materials,
+.stickers,
+.letter-picker {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.topbar {
+  min-height: 52px;
+  justify-content: space-between;
+  padding: 0 5px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.brand-mark {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border-radius: 15px;
+  background: #ffcf57;
+  box-shadow: 0 4px 0 #d9a72e;
+  font: 900 21px/1 "Comic Sans MS", "Trebuchet MS", sans-serif;
+  transform: rotate(-2deg);
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(1rem, 2vw, 1.45rem);
+  line-height: 1.05;
+}
+
+.brand p {
+  margin: 3px 0 0;
+  color: #766859;
+  font-size: clamp(.7rem, 1.4vw, .86rem);
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.save-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .72);
+  color: #7b6c5c;
+  font-size: .79rem;
+  white-space: nowrap;
+}
+
+.save-status.is-saved span { color: #21875d; font-weight: 900; }
+
+.install-button {
+  min-height: 38px;
+  padding: 0 13px;
+  border-radius: 13px;
+  background: #342d26;
+  color: white;
+  font-weight: 800;
+}
+
+.tool-area {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.materials,
+.stickers,
+.letter-picker {
+  min-width: 0;
+  min-height: 56px;
+  padding: 6px 9px;
+  border: 1px solid rgba(117, 98, 73, .15);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, .68);
+  box-shadow: 0 6px 20px rgba(105, 79, 42, .07);
+}
+
+.toolbar-title {
+  flex: 0 0 auto;
+  padding: 0 4px;
+  color: #7b6b59;
+  font-size: .75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+.horizontal-tools {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scrollbar-width: none;
+  scroll-snap-type: x proximity;
+  padding: 4px 5px;
+}
+
+.horizontal-tools::-webkit-scrollbar,
+.letter-buttons::-webkit-scrollbar { display: none; }
+
+.material-button,
+.tool-button,
+.sticker-button {
+  flex: 0 0 auto;
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 12px;
+  border-radius: 14px;
+  color: #473c32;
+  background: #f3ede3;
+  font-weight: 800;
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, .08);
+  transition: transform 120ms ease, box-shadow 120ms ease;
+  scroll-snap-align: center;
+}
+
+.material-button:active,
+.tool-button:active,
+.sticker-button:active,
+.letter-button:active {
+  transform: translateY(2px);
+  box-shadow: none;
+}
+
+.material-icon,
+.sticker-button > span:first-child { font-size: 1.18rem; }
+
+.material-water.is-selected {
+  background: #bfe8ff;
+  box-shadow: inset 0 -4px 0 #52b3e8, 0 0 0 3px white, 0 0 0 6px #52b3e8;
+}
+
+.material-stone.is-selected {
+  background: #d6c9b7;
+  box-shadow: inset 0 -4px 0 #8c7d69, 0 0 0 3px white, 0 0 0 6px #8c7d69;
+}
+
+.material-volcano.is-selected {
+  background: #ffb78c;
+  box-shadow: inset 0 -4px 0 #e45422, 0 0 0 3px white, 0 0 0 6px #e45422;
+}
+
+.material-tree.is-selected {
+  background: #cfe9b8;
+  box-shadow: inset 0 -4px 0 #72a64e, 0 0 0 3px white, 0 0 0 6px #72a64e;
+}
+
+.stickers {
+  min-height: 50px;
+  background: rgba(255, 255, 255, .52);
+}
+
+.sticker-button {
+  min-height: 38px;
+  padding: 0 11px;
+  background: #fff;
+  font-size: .82rem;
+}
+
+.sticker-button.is-selected {
+  background: #f7dc88;
+  box-shadow: inset 0 -3px 0 #d4a938, 0 0 0 3px white, 0 0 0 5px #e3b846;
+}
+
+.history-actions {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 7px;
+  margin-left: auto;
+}
+
 .tool-button { background: #ece9e4; }
 .tool-button.danger { background: #ffe0d8; color: #8c3624; }
-.tool-button:disabled { opacity: .38; cursor: default; }
-.canvas-panel { min-height: 0; overflow: hidden; border: 1px solid rgba(117,98,73,.18); border-radius: 28px; background: white; box-shadow: 0 12px 34px rgba(105,79,42,.12); }
-.letter-canvas { display: block; width: 100%; height: 100%; touch-action: none; }
-.loading { height: 100%; display: grid; place-items: center; color: #7b6c5c; font-weight: 800; }
-.letter-picker { justify-content: center; }
-.letter-buttons { display: flex; gap: 10px; }
-.letter-button { width: clamp(72px,10vw,112px); height: 58px; border-radius: 18px; color: #514539; background: #f0eadd; box-shadow: inset 0 -4px 0 #d3c5af; }
-.letter-button.is-selected { background: #ffcf57; box-shadow: inset 0 -4px 0 #d9a72e, 0 0 0 3px white, 0 0 0 6px #e5b63e; }
-.letter-pair { font: 900 clamp(1.45rem,3vw,2rem)/1 "Comic Sans MS", sans-serif; }
-@media (max-width:740px), (max-height:620px) { .app-shell { gap: 6px; padding: 7px; } .brand-mark { width: 38px; height: 38px; border-radius: 12px; font-size: 18px; } .brand p, .save-status, .toolbar-title { display:none; } .materials, .letter-picker { min-height:58px; padding:6px 8px; } .material-button, .tool-button { min-height:44px; padding:0 10px; font-size:.78rem; } .material-swatch { width: 26px; height: 26px; } .letter-button { height:46px; } }
+.tool-button:disabled {
+  opacity: .38;
+  cursor: default;
+  transform: none;
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, .05);
+}
+
+.canvas-panel {
+  min-height: 0;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(117, 98, 73, .18);
+  border-radius: 25px;
+  background: rgba(255, 255, 255, .7);
+  box-shadow: 0 10px 30px rgba(105, 79, 42, .11);
+}
+
+.canvas-morph,
+.canvas-host {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+}
+
+.canvas-morph {
+  animation: clay-morph 360ms cubic-bezier(.25, .8, .25, 1);
+  transform-origin: center bottom;
+}
+
+@keyframes clay-morph {
+  0% { opacity: .25; filter: blur(5px); transform: scaleX(.72) scaleY(1.12); }
+  58% { opacity: .86; filter: blur(1px); transform: scaleX(1.06) scaleY(.96); }
+  100% { opacity: 1; filter: none; transform: scale(1); }
+}
+
+.letter-canvas {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 20px;
+  background: white;
+  touch-action: none;
+  cursor: crosshair;
+  box-shadow: inset 0 0 0 1px rgba(117, 98, 73, .1);
+}
+
+.letter-canvas.is-sticker-mode { cursor: copy; }
+
+.loading {
+  height: 100%;
+  display: grid;
+  place-items: center;
+  color: #7b6c5c;
+  font-weight: 800;
+}
+
+.letter-picker { justify-content: flex-start; }
+
+.letter-buttons {
+  min-width: 0;
+  flex: 1 1 auto;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scrollbar-width: none;
+  scroll-snap-type: x mandatory;
+  padding: 4px 7px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.letter-button {
+  flex: 0 0 auto;
+  width: clamp(68px, 9vw, 94px);
+  height: 48px;
+  border-radius: 15px;
+  color: #514539;
+  background: #f0eadd;
+  box-shadow: inset 0 -4px 0 #d3c5af;
+  scroll-snap-align: center;
+}
+
+.letter-button.is-selected {
+  background: #ffcf57;
+  box-shadow: inset 0 -4px 0 #d9a72e, 0 0 0 3px white, 0 0 0 6px #e5b63e;
+}
+
+.letter-pair {
+  font: 900 clamp(1.3rem, 2.5vw, 1.8rem)/1 "Comic Sans MS", "Trebuchet MS", sans-serif;
+}
+
+@media (max-height: 720px) {
+  .app-shell { gap: 5px; padding: 6px; }
+  .topbar { min-height: 38px; }
+  .brand-mark { width: 36px; height: 36px; border-radius: 11px; font-size: 17px; }
+  .brand p, .save-status, .toolbar-title { display: none; }
+  .materials, .stickers, .letter-picker { min-height: 44px; padding: 3px 6px; border-radius: 14px; }
+  .material-button, .tool-button { min-height: 36px; padding: 0 9px; font-size: .76rem; }
+  .sticker-button { min-height: 34px; padding: 0 8px; font-size: .72rem; }
+  .letter-button { width: 62px; height: 38px; border-radius: 12px; }
+  .letter-pair { font-size: 1.18rem; }
+}
+
+@media (max-width: 620px) {
+  .brand h1 { font-size: .96rem; }
+  .install-button { display: none; }
+  .material-button, .tool-button { gap: 4px; padding: 0 8px; font-size: .74rem; }
+  .history-actions { gap: 4px; }
+  .tool-button { font-size: 0; width: 42px; padding: 0; }
+  .tool-button::first-letter { font-size: 1rem; }
+}
