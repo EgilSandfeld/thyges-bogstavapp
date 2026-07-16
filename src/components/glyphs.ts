@@ -1,6 +1,5 @@
 import type { Letter } from '../types';
 
-
 export interface LetterPaths {
   uppercase: Path2D;
   lowercase: Path2D;
@@ -152,15 +151,17 @@ function glyphPath(letter: Letter, lower: boolean, left: number, top: number, wi
 
 export function getLetterPaths(letter: Letter, width: number, height: number): LetterPaths {
   const minimum = Math.min(width, height);
-  const upperTop = height * .33;
-  const upperSize = height * .49;
-  const lowerTop = height * .42;
-  const lowerSize = height * .34;
 
-  // Keep X and Y on the same scale. The canvas may change shape when toolbars
-  // are added or the tablet rotates, but the glyphs must never be stretched.
-  const upperLeft = width * .28 - upperSize * .5;
-  const lowerLeft = width * .70 - lowerSize * .5;
+  // Size from both available width and height, but always use one uniform
+  // scale per glyph. This fills portrait and landscape canvases without
+  // stretching the letters when toolbars change the remaining space.
+  const upperSize = Math.min(width * .46, height * .68);
+  const lowerSize = Math.min(width * .38, height * .52);
+  const verticalCenter = height * .6;
+  const upperTop = verticalCenter - upperSize * .5;
+  const lowerTop = verticalCenter - lowerSize * .45;
+  const upperLeft = width * .27 - upperSize * .5;
+  const lowerLeft = width * .73 - lowerSize * .5;
 
   return {
     uppercase: glyphPath(letter, false, upperLeft, upperTop, upperSize, upperSize),
@@ -168,7 +169,7 @@ export function getLetterPaths(letter: Letter, width: number, height: number): L
     guideWidth: Math.max(4, minimum * .0065),
     toleranceWidth: Math.max(28, minimum * .062),
     top: upperTop,
-    bottom: height * .9
+    bottom: Math.min(height * .94, lowerTop + lowerSize * 1.3)
   };
 }
 
