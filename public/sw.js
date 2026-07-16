@@ -1,4 +1,4 @@
-const CACHE_NAME = 'thyges-bogstavapp-v4';
+const CACHE_NAME = 'thyges-bogstavapp-v5';
 const APP_SHELL = ['./', './index.html', './manifest.webmanifest'];
 
 self.addEventListener('install', event => {
