@@ -1,0 +1,11 @@
+{
+  "name": "Thyges Bogstavværksted",
+  "short_name": "Bogstaver",
+  "description": "Tegn frit på bogstavernes linjer med vand, sten og vulkan.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#fff8e9",
+  "theme_color": "#fff8e9"
+}
