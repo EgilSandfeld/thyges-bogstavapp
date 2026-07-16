@@ -19,8 +19,6 @@ interface Viewport {
   height: number;
 }
 
-const ASPECT_RATIO = 16 / 9;
-
 function createStroke(material: Material): Stroke {
   return {
     id: globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`,
@@ -56,13 +54,10 @@ export function LetterCanvas({
 
     const resize = () => {
       const rect = host.getBoundingClientRect();
-      let width = Math.max(1, rect.width);
-      let height = width / ASPECT_RATIO;
-      if (height > rect.height) {
-        height = Math.max(1, rect.height);
-        width = height * ASPECT_RATIO;
-      }
-      setViewport({ width: Math.floor(width), height: Math.floor(height) });
+      setViewport({
+        width: Math.max(1, Math.floor(rect.width)),
+        height: Math.max(1, Math.floor(rect.height))
+      });
     };
 
     resize();
