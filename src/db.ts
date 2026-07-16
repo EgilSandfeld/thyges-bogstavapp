@@ -20,20 +20,20 @@ function openDatabase(): Promise<IDBDatabase> {
   });
 }
 
-export async function loadState(): Promise<SavedState | null> {
+export async function loadState(): Promise<unknown> {
   try {
     const database = await openDatabase();
-    const value = await new Promise<SavedState | null>((resolve, reject) => {
+    const value = await new Promise<unknown>((resolve, reject) => {
       const transaction = database.transaction(STORE_NAME, 'readonly');
       const request = transaction.objectStore(STORE_NAME).get(STATE_KEY);
-      request.onsuccess = () => resolve((request.result as SavedState | undefined) ?? null);
+      request.onsuccess = () => resolve(request.result ?? null);
       request.onerror = () => reject(request.error);
     });
     database.close();
     return value;
   } catch {
     const fallback = localStorage.getItem(FALLBACK_KEY);
-    return fallback ? JSON.parse(fallback) as SavedState : null;
+    return fallback ? JSON.parse(fallback) as unknown : null;
   }
 }
 
