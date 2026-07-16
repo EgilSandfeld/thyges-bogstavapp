@@ -1,0 +1,32 @@
+:root { font-family: Inter, ui-rounded, system-ui, sans-serif; color: #382f27; background: #fff8e9; }
+* { box-sizing: border-box; }
+html, body, #root { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+button { font: inherit; border: 0; cursor: pointer; touch-action: manipulation; }
+.app-shell { height: 100dvh; display: grid; grid-template-rows: auto auto minmax(0,1fr) auto; gap: 10px; padding: 12px; background: radial-gradient(circle at 10% 10%, rgba(255,211,104,.22), transparent 28%), radial-gradient(circle at 90% 92%, rgba(73,174,255,.14), transparent 27%), #fff8e9; user-select: none; }
+.topbar, .materials, .letter-picker { display: flex; align-items: center; gap: 10px; }
+.topbar { min-height: 58px; justify-content: space-between; padding: 0 6px; }
+.brand { display: flex; align-items: center; gap: 11px; }
+.brand-mark { width: 48px; height: 48px; display: grid; place-items: center; border-radius: 16px; background: #ffcf57; box-shadow: 0 4px 0 #d9a72e; font: 900 22px/1 "Comic Sans MS", sans-serif; }
+h1 { margin: 0; font-size: clamp(1.05rem,2.2vw,1.55rem); }
+.brand p { margin: 4px 0 0; color: #766859; font-size: .85rem; }
+.save-status { padding: 8px 11px; border-radius: 999px; background: rgba(255,255,255,.72); color: #7b6c5c; font-size: .82rem; white-space: nowrap; }
+.save-status.is-saved { color: #21875d; font-weight: 800; }
+.materials, .letter-picker { min-height: 70px; padding: 9px 11px; border: 1px solid rgba(117,98,73,.15); border-radius: 21px; background: rgba(255,255,255,.68); box-shadow: 0 8px 24px rgba(105,79,42,.08); }
+.toolbar-title { padding: 0 4px; color: #7b6b59; font-size: .82rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
+.material-button, .tool-button { min-height: 50px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 0 15px; border-radius: 16px; color: #473c32; background: #f3ede3; font-weight: 800; box-shadow: inset 0 -3px 0 rgba(0,0,0,.08); }
+.material-water.is-selected { background: #bfe8ff; box-shadow: inset 0 -4px 0 #52b3e8, 0 0 0 3px white, 0 0 0 6px #52b3e8; }
+.material-stone.is-selected { background: #d6c9b7; box-shadow: inset 0 -4px 0 #8c7d69, 0 0 0 3px white, 0 0 0 6px #8c7d69; }
+.material-volcano.is-selected { background: #ffb78c; box-shadow: inset 0 -4px 0 #e45422, 0 0 0 3px white, 0 0 0 6px #e45422; }
+.history-actions { display: flex; gap: 8px; margin-left: auto; }
+.tool-button { background: #ece9e4; }
+.tool-button.danger { background: #ffe0d8; color: #8c3624; }
+.tool-button:disabled { opacity: .38; cursor: default; }
+.canvas-panel { min-height: 0; overflow: hidden; border: 1px solid rgba(117,98,73,.18); border-radius: 28px; background: white; box-shadow: 0 12px 34px rgba(105,79,42,.12); }
+.letter-canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+.loading { height: 100%; display: grid; place-items: center; color: #7b6c5c; font-weight: 800; }
+.letter-picker { justify-content: center; }
+.letter-buttons { display: flex; gap: 10px; }
+.letter-button { width: clamp(72px,10vw,112px); height: 58px; border-radius: 18px; color: #514539; background: #f0eadd; box-shadow: inset 0 -4px 0 #d3c5af; }
+.letter-button.is-selected { background: #ffcf57; box-shadow: inset 0 -4px 0 #d9a72e, 0 0 0 3px white, 0 0 0 6px #e5b63e; }
+.letter-pair { font: 900 clamp(1.45rem,3vw,2rem)/1 "Comic Sans MS", sans-serif; }
+@media (max-width:740px), (max-height:620px) { .app-shell { gap: 6px; padding: 7px; } .brand-mark { width: 38px; height: 38px; border-radius: 12px; font-size: 18px; } .brand p, .save-status, .toolbar-title { display:none; } .materials, .letter-picker { min-height:58px; padding:6px 8px; } .material-button, .tool-button { min-height:44px; padding:0 10px; font-size:.78rem; } .letter-button { height:46px; } }
