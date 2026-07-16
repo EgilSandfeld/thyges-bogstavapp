@@ -12,7 +12,6 @@ const initialState: SavedState = {
 };
 
 const labels: Record<Material, string> = { water: 'Vand', stone: 'Sten', volcano: 'Vulkan' };
-const icons: Record<Material, string> = { water: '💧', stone: '🪨', volcano: '🌋' };
 
 export default function App() {
   const [state, setState] = useState(initialState);
@@ -70,7 +69,8 @@ export default function App() {
         <span className="toolbar-title">Tegn med</span>
         {materials.map(item => (
           <button key={item} className={`material-button material-${item} ${material === item ? 'is-selected' : ''}`} onClick={() => setMaterial(item)}>
-            <span>{icons[item]}</span><span>{labels[item]}</span>
+            <span className="material-swatch" aria-hidden="true" />
+            <span>{labels[item]}</span>
           </button>
         ))}
         <div className="history-actions">
