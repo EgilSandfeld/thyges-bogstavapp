@@ -8,72 +8,258 @@ interface Props {
   onChange: (strokes: Stroke[]) => void;
 }
 
-function drawLetters(context: CanvasRenderingContext2D, letter: Letter, width: number, height: number, color: string, lineWidth: number) {
+function upperPath(letter: Letter, left: number, top: number, width: number, height: number) {
+  const path = new Path2D();
+
+  if (letter === 'A') {
+    path.moveTo(left + width * .13, top + height * .88);
+    path.lineTo(left + width * .5, top + height * .08);
+    path.lineTo(left + width * .87, top + height * .88);
+    path.moveTo(left + width * .27, top + height * .58);
+    path.lineTo(left + width * .73, top + height * .58);
+  } else if (letter === 'B') {
+    path.moveTo(left + width * .22, top + height * .08);
+    path.lineTo(left + width * .22, top + height * .9);
+    path.moveTo(left + width * .22, top + height * .09);
+    path.bezierCurveTo(left + width * .83, top + height * .04, left + width * .86, top + height * .48, left + width * .22, top + height * .49);
+    path.moveTo(left + width * .22, top + height * .49);
+    path.bezierCurveTo(left + width * .9, top + height * .47, left + width * .88, top + height * .94, left + width * .22, top + height * .9);
+  } else {
+    path.moveTo(left + width * .82, top + height * .2);
+    path.bezierCurveTo(left + width * .55, top - height * .02, left + width * .12, top + height * .12, left + width * .12, top + height * .5);
+    path.bezierCurveTo(left + width * .12, top + height * .88, left + width * .55, top + height * 1.02, left + width * .82, top + height * .8);
+  }
+
+  return path;
+}
+
+function lowerPath(letter: Letter, left: number, top: number, width: number, height: number) {
+  const path = new Path2D();
+
+  if (letter === 'A') {
+    path.moveTo(left + width * .72, top + height * .31);
+    path.bezierCurveTo(left + width * .57, top + height * .1, left + width * .19, top + height * .18, left + width * .18, top + height * .55);
+    path.bezierCurveTo(left + width * .18, top + height * .91, left + width * .58, top + height * .98, left + width * .72, top + height * .7);
+    path.moveTo(left + width * .72, top + height * .31);
+    path.lineTo(left + width * .72, top + height * .9);
+  } else if (letter === 'B') {
+    path.moveTo(left + width * .24, top + height * .02);
+    path.lineTo(left + width * .24, top + height * .9);
+    path.moveTo(left + width * .24, top + height * .45);
+    path.bezierCurveTo(left + width * .42, top + height * .18, left + width * .8, top + height * .27, left + width * .8, top + height * .61);
+    path.bezierCurveTo(left + width * .8, top + height * .94, left + width * .43, top + height * 1.01, left + width * .24, top + height * .77);
+  } else {
+    path.moveTo(left + width * .8, top + height * .37);
+    path.bezierCurveTo(left + width * .57, top + height * .15, left + width * .17, top + height * .26, left + width * .17, top + height * .61);
+    path.bezierCurveTo(left + width * .17, top + height * .94, left + width * .57, top + height * 1.02, left + width * .8, top + height * .79);
+  }
+
+  return path;
+}
+
+function drawLetters(context: CanvasRenderingContext2D, letter: Letter, width: number, height: number) {
+  const guideWidth = Math.max(4, Math.min(width, height) * .007);
+  const cellWidth = width * .38;
+  const top = height * .1;
+  const pathHeight = height * .78;
+  const uppercase = upperPath(letter, width * .07, top, cellWidth, pathHeight);
+  const lowercase = lowerPath(letter, width * .55, top + pathHeight * .08, cellWidth, pathHeight * .9);
+
   context.save();
-  context.font = `900 ${Math.floor(height * 0.63)}px "Comic Sans MS", "Trebuchet MS", sans-serif`;
-  context.textAlign = 'center';
-  context.textBaseline = 'middle';
-  context.lineJoin = 'round';
   context.lineCap = 'round';
-  context.strokeStyle = color;
-  context.lineWidth = lineWidth;
-  context.strokeText(letter, width * 0.27, height * 0.53);
-  context.strokeText(letter.toLowerCase(), width * 0.73, height * 0.53);
+  context.lineJoin = 'round';
+  context.strokeStyle = 'rgba(255,255,255,.9)';
+  context.lineWidth = guideWidth * 2.7;
+  context.stroke(uppercase);
+  context.stroke(lowercase);
+  context.strokeStyle = 'rgba(76,68,59,.56)';
+  context.lineWidth = guideWidth;
+  context.stroke(uppercase);
+  context.stroke(lowercase);
   context.restore();
 }
 
-function drawStroke(context: CanvasRenderingContext2D, stroke: Stroke, width: number, height: number) {
-  const size = Math.max(14, Math.min(width, height) * 0.035);
+function smoothPath(context: CanvasRenderingContext2D, points: Point[], width: number, height: number) {
+  context.beginPath();
+  const first = points[0];
+  context.moveTo(first.x * width, first.y * height);
 
-  for (const segment of stroke.segments) {
-    if (!segment.length)
+  if (points.length === 1) {
+    context.lineTo(first.x * width + .01, first.y * height + .01);
+    return;
+  }
+
+  for (let index = 1; index < points.length - 1; index++) {
+    const current = points[index];
+    const next = points[index + 1];
+    const midX = (current.x + next.x) * width * .5;
+    const midY = (current.y + next.y) * height * .5;
+    context.quadraticCurveTo(current.x * width, current.y * height, midX, midY);
+  }
+
+  const last = points[points.length - 1];
+  context.lineTo(last.x * width, last.y * height);
+}
+
+function hash(value: string) {
+  let result = 2166136261;
+  for (let index = 0; index < value.length; index++) {
+    result ^= value.charCodeAt(index);
+    result = Math.imul(result, 16777619);
+  }
+  return result >>> 0;
+}
+
+function random(seed: number) {
+  let value = seed + 0x6d2b79f5;
+  value = Math.imul(value ^ value >>> 15, value | 1);
+  value ^= value + Math.imul(value ^ value >>> 7, value | 61);
+  return ((value ^ value >>> 14) >>> 0) / 4294967296;
+}
+
+function drawWater(context: CanvasRenderingContext2D, stroke: Stroke, points: Point[], width: number, height: number, size: number) {
+  smoothPath(context, points, width, height);
+  context.lineWidth = size * 1.18;
+  context.strokeStyle = 'rgba(17,92,154,.48)';
+  context.shadowColor = 'rgba(42,174,243,.55)';
+  context.shadowBlur = size * .45;
+  context.stroke();
+
+  smoothPath(context, points, width, height);
+  const water = context.createLinearGradient(0, 0, width, height);
+  water.addColorStop(0, '#9be9ff');
+  water.addColorStop(.45, '#2bb8ee');
+  water.addColorStop(1, '#087bc4');
+  context.lineWidth = size * .84;
+  context.strokeStyle = water;
+  context.shadowBlur = 0;
+  context.stroke();
+
+  smoothPath(context, points, width, height);
+  context.lineWidth = Math.max(2, size * .13);
+  context.strokeStyle = 'rgba(239,252,255,.88)';
+  context.setLineDash([size * .65, size * .72]);
+  context.lineDashOffset = -(hash(stroke.id) % Math.max(1, Math.round(size)));
+  context.stroke();
+  context.setLineDash([]);
+
+  const seed = hash(stroke.id);
+  for (let index = 2; index < points.length; index += 7) {
+    const point = points[index];
+    const radius = size * (.08 + random(seed + index) * .08);
+    context.beginPath();
+    context.arc(point.x * width + (random(seed + index * 3) - .5) * size * .45, point.y * height + (random(seed + index * 5) - .5) * size * .4, radius, 0, Math.PI * 2);
+    context.strokeStyle = 'rgba(232,251,255,.75)';
+    context.lineWidth = Math.max(1.5, size * .06);
+    context.stroke();
+  }
+}
+
+function drawStone(context: CanvasRenderingContext2D, stroke: Stroke, points: Point[], width: number, height: number, size: number) {
+  smoothPath(context, points, width, height);
+  context.lineWidth = size * 1.14;
+  context.strokeStyle = '#373735';
+  context.stroke();
+
+  smoothPath(context, points, width, height);
+  context.lineWidth = size * .88;
+  context.strokeStyle = '#7b756d';
+  context.stroke();
+
+  const seed = hash(stroke.id);
+  for (let index = 1; index < points.length; index += 3) {
+    const point = points[index];
+    const x = point.x * width + (random(seed + index * 11) - .5) * size * .55;
+    const y = point.y * height + (random(seed + index * 17) - .5) * size * .55;
+    const radius = size * (.07 + random(seed + index * 23) * .13);
+
+    context.beginPath();
+    context.arc(x, y, radius, 0, Math.PI * 2);
+    context.fillStyle = index % 2 ? '#c1b8aa' : '#57534d';
+    context.fill();
+
+    if (index % 6 === 1) {
+      context.beginPath();
+      context.moveTo(x - radius * 1.2, y - radius * .3);
+      context.lineTo(x + radius * .15, y + radius * .15);
+      context.lineTo(x + radius * 1.1, y - radius * .7);
+      context.strokeStyle = 'rgba(20,20,19,.85)';
+      context.lineWidth = Math.max(1.5, size * .055);
+      context.stroke();
+    }
+  }
+}
+
+function drawVolcano(context: CanvasRenderingContext2D, stroke: Stroke, points: Point[], width: number, height: number, size: number) {
+  smoothPath(context, points, width, height);
+  context.lineWidth = size * 1.22;
+  context.strokeStyle = '#2b2522';
+  context.stroke();
+
+  smoothPath(context, points, width, height);
+  const volcano = context.createLinearGradient(0, height * .1, 0, height * .9);
+  volcano.addColorStop(0, '#fff06a');
+  volcano.addColorStop(.13, '#ff9d1e');
+  volcano.addColorStop(.28, '#ed4319');
+  volcano.addColorStop(.46, '#8b3425');
+  volcano.addColorStop(.64, '#5f5148');
+  volcano.addColorStop(1, '#302d2a');
+  context.lineWidth = size * .94;
+  context.strokeStyle = volcano;
+  context.stroke();
+
+  const seed = hash(stroke.id);
+  points.forEach((point, index) => {
+    if (index % 4)
+      return;
+
+    const x = point.x * width + (random(seed + index * 13) - .5) * size * .42;
+    const y = point.y * height + (random(seed + index * 19) - .5) * size * .42;
+
+    if (point.y < .46) {
+      context.beginPath();
+      context.arc(x, y, size * (.08 + random(seed + index * 29) * .1), 0, Math.PI * 2);
+      context.fillStyle = point.y < .28 ? '#fff36b' : '#ff7b1b';
+      context.shadowColor = '#ff5b17';
+      context.shadowBlur = size * .28;
+      context.fill();
+      context.shadowBlur = 0;
+    } else {
+      context.beginPath();
+      context.moveTo(x - size * .12, y - size * .08);
+      context.lineTo(x, y + size * .04);
+      context.lineTo(x + size * .14, y - size * .12);
+      context.strokeStyle = index % 8 ? 'rgba(24,22,21,.82)' : 'rgba(181,160,139,.72)';
+      context.lineWidth = Math.max(1.5, size * .06);
+      context.stroke();
+    }
+  });
+}
+
+function drawStroke(context: CanvasRenderingContext2D, stroke: Stroke, width: number, height: number) {
+  const size = Math.max(18, Math.min(width, height) * .038);
+
+  for (const points of stroke.segments) {
+    if (!points.length)
       continue;
 
     context.save();
     context.lineCap = 'round';
     context.lineJoin = 'round';
-    context.beginPath();
-    segment.forEach((point, index) => {
-      const x = point.x * width;
-      const y = point.y * height;
-      if (!index)
-        context.moveTo(x, y);
-      else
-        context.lineTo(x, y);
-    });
 
-    if (stroke.material === 'water') {
-      context.lineWidth = size;
-      context.strokeStyle = 'rgba(36, 151, 231, .62)';
-      context.shadowColor = 'rgba(87, 202, 255, .7)';
-      context.shadowBlur = size * .45;
-      context.stroke();
-    } else if (stroke.material === 'stone') {
-      context.lineWidth = size;
-      context.strokeStyle = '#84786b';
-      context.stroke();
-      context.lineWidth = size * .35;
-      context.strokeStyle = 'rgba(218, 207, 190, .8)';
-      context.setLineDash([2, 10]);
-      context.stroke();
-    } else {
-      context.lineWidth = size * 1.1;
-      context.strokeStyle = '#6c2016';
-      context.stroke();
-      context.lineWidth = size * .7;
-      context.strokeStyle = '#f14b18';
-      context.stroke();
-      context.lineWidth = size * .22;
-      context.strokeStyle = '#ffcb2d';
-      context.stroke();
-    }
+    if (stroke.material === 'water')
+      drawWater(context, stroke, points, width, height, size);
+    else if (stroke.material === 'stone')
+      drawStone(context, stroke, points, width, height, size);
+    else
+      drawVolcano(context, stroke, points, width, height, size);
+
     context.restore();
   }
 }
 
 export function LetterCanvas({ letter, material, strokes, onChange }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const maskRef = useRef<HTMLCanvasElement>(document.createElement('canvas'));
   const activePointer = useRef<number | null>(null);
   const [draft, setDraft] = useState<Stroke | null>(null);
   const [size, setSize] = useState({ width: 1, height: 1 });
@@ -88,8 +274,6 @@ export function LetterCanvas({ letter, material, strokes, onChange }: Props) {
       const scale = Math.min(window.devicePixelRatio || 1, 2);
       canvas.width = Math.max(1, Math.round(rect.width * scale));
       canvas.height = Math.max(1, Math.round(rect.height * scale));
-      maskRef.current.width = canvas.width;
-      maskRef.current.height = canvas.height;
       setSize({ width: canvas.width, height: canvas.height });
     };
 
@@ -101,39 +285,32 @@ export function LetterCanvas({ letter, material, strokes, onChange }: Props) {
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    const mask = maskRef.current;
     if (!canvas)
       return;
 
     const context = canvas.getContext('2d');
-    const maskContext = mask.getContext('2d', { willReadFrequently: true });
-    if (!context || !maskContext)
+    if (!context)
       return;
 
     const { width, height } = canvas;
     context.clearRect(0, 0, width, height);
-    const gradient = context.createLinearGradient(0, 0, 0, height);
-    gradient.addColorStop(0, '#fffefb');
-    gradient.addColorStop(1, '#fff8ea');
-    context.fillStyle = gradient;
+    const background = context.createLinearGradient(0, 0, 0, height);
+    background.addColorStop(0, '#fffefb');
+    background.addColorStop(1, '#fff8ea');
+    context.fillStyle = background;
     context.fillRect(0, 0, width, height);
 
     context.save();
     context.setLineDash([10, 18]);
-    context.strokeStyle = 'rgba(126, 112, 91, .16)';
+    context.strokeStyle = 'rgba(126,112,91,.13)';
     context.lineWidth = Math.max(2, width * .0025);
     context.beginPath();
-    context.moveTo(width / 2, height * .14);
-    context.lineTo(width / 2, height * .88);
+    context.moveTo(width / 2, height * .12);
+    context.lineTo(width / 2, height * .9);
     context.stroke();
     context.restore();
 
-    const guideWidth = Math.max(6, Math.min(width, height) * .018);
-    drawLetters(context, letter, width, height, 'rgba(83, 72, 58, .55)', guideWidth);
-
-    maskContext.clearRect(0, 0, width, height);
-    drawLetters(maskContext, letter, width, height, '#000', guideWidth * 5.5);
-
+    drawLetters(context, letter, width, height);
     strokes.forEach(stroke => drawStroke(context, stroke, width, height));
     if (draft)
       drawStroke(context, draft, width, height);
@@ -143,26 +320,15 @@ export function LetterCanvas({ letter, material, strokes, onChange }: Props) {
     const canvas = canvasRef.current!;
     const rect = canvas.getBoundingClientRect();
     return {
-      x: (event.clientX - rect.left) / rect.width,
-      y: (event.clientY - rect.top) / rect.height
+      x: Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width)),
+      y: Math.max(0, Math.min(1, (event.clientY - rect.top) / rect.height))
     };
-  }
-
-  function allowed(point: Point) {
-    const mask = maskRef.current;
-    const context = mask.getContext('2d', { willReadFrequently: true });
-    if (!context)
-      return false;
-    const x = Math.max(0, Math.min(mask.width - 1, Math.round(point.x * mask.width)));
-    const y = Math.max(0, Math.min(mask.height - 1, Math.round(point.y * mask.height)));
-    return context.getImageData(x, y, 1, 1).data[3] > 0;
   }
 
   function pointerDown(event: React.PointerEvent<HTMLCanvasElement>) {
     event.currentTarget.setPointerCapture(event.pointerId);
     activePointer.current = event.pointerId;
-    const point = pointFromEvent(event);
-    setDraft({ id: crypto.randomUUID(), material, segments: allowed(point) ? [[point]] : [[]] });
+    setDraft({ id: crypto.randomUUID(), material, segments: [[pointFromEvent(event)]] });
   }
 
   function pointerMove(event: React.PointerEvent<HTMLCanvasElement>) {
@@ -173,31 +339,27 @@ export function LetterCanvas({ letter, material, strokes, onChange }: Props) {
     setDraft(current => {
       if (!current)
         return current;
-      const segments = current.segments.map(segment => [...segment]);
-      if (allowed(point)) {
-        if (!segments.length || !segments[segments.length - 1].length)
-          segments.push([]);
-        segments[segments.length - 1].push(point);
-      } else if (segments.length && segments[segments.length - 1].length) {
-        segments.push([]);
-      }
-      return { ...current, segments };
+
+      const points = current.segments[0];
+      const last = points[points.length - 1];
+      if (last && Math.hypot(point.x - last.x, point.y - last.y) < .002)
+        return current;
+
+      return { ...current, segments: [[...points, point]] };
     });
   }
 
   function finish(event: React.PointerEvent<HTMLCanvasElement>) {
     if (activePointer.current !== event.pointerId)
       return;
+
     activePointer.current = null;
     setDraft(current => {
-      if (current) {
-        const segments = current.segments.filter(segment => segment.length);
-        if (segments.length)
-          onChange([...strokes, { ...current, segments }]);
-      }
+      if (current?.segments[0]?.length)
+        onChange([...strokes, current]);
       return null;
     });
   }
 
-  return <canvas ref={canvasRef} className="letter-canvas" aria-label={`Tegneområde til ${letter} og ${letter.toLowerCase()}`} onContextMenu={event => event.preventDefault()} onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={finish} onPointerCancel={finish} />;
+  return <canvas ref={canvasRef} className="letter-canvas" aria-label={`Frit tegneområde med ${letter} og ${letter.toLowerCase()}`} onContextMenu={event => event.preventDefault()} onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={finish} onPointerCancel={finish} />;
 }
