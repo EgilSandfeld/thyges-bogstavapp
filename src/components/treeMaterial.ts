@@ -9,6 +9,14 @@ import type {
   TrunkCount
 } from '../types';
 
+interface NormalizedTreeOptions {
+  color: TreeColor;
+  leafColor: LeafColor;
+  trunkColor: TrunkColor;
+  leafShape: LeafShape;
+  trunks: TrunkCount;
+}
+
 const leafPalettes: Record<LeafColor, [string, string, string]> = {
   lime: ['#d3f37a', '#b5df42', '#86b72d'],
   red: ['#f7898e', '#e94e59', '#bc303d'],
@@ -54,7 +62,7 @@ function random(seed: number) {
   return ((value ^ value >>> 14) >>> 0) / 4294967296;
 }
 
-function normalizeTreeOptions(stroke: Stroke): TreeOptions {
+function normalizeTreeOptions(stroke: Stroke): NormalizedTreeOptions {
   const source = (stroke.tree ?? {}) as Partial<TreeOptions> & { color?: TreeColor };
   return {
     color: source.color ?? 'dark-green',
@@ -254,8 +262,6 @@ function drawTreeEffects(
   context.lineCap = 'round';
   context.lineJoin = 'round';
 
-  // Every trunk shares this exact start point. When the stroke starts at the bottom,
-  // the first painted point becomes the common root point.
   for (let trunk = 0; trunk < options.trunks; trunk++) {
     const fan = trunk - center;
     const spread = fan * size * (1.05 + options.trunks * .08);
