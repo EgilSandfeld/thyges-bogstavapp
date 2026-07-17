@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import type {
   BrushOptions,
@@ -31,7 +31,7 @@ interface Viewport {
   height: number;
 }
 
-const brushPreviewColors: Record<NonNullable<BrushOptions['color']>, string> = {
+const brushPreviewColors: Record<BrushOptions['color'], string> = {
   pink: '#f18bc3',
   purple: '#8e63d7',
   red: '#e54848',
@@ -75,43 +75,42 @@ export function LetterCanvas({
   const draftRef = useRef<Stroke | null>(null);
   const [viewport, setViewport] = useState<Viewport>({ width: 1, height: 1 });
 
-  const scale = Math.min(window.devicePixelRatio || 1, 1.5);
-  const pixelWidth = Math.max(1, Math.round(viewport.width * scale));
-  const pixelHeight = Math.max(1, Math.round(viewport.height * scale));
+  const pixelWidth = viewport.width;
+  const pixelHeight = viewport.height;
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const host = hostRef.current;
     if (!host)
       return;
 
+    let frame = 0;
     const resize = () => {
-      const rect = host.getBoundingClientRect();
-      setViewport({
-        width: Math.max(1, Math.floor(rect.width)),
-        height: Math.max(1, Math.floor(rect.height))
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const width = Math.max(1, Math.round(host.clientWidth));
+        const height = Math.max(1, Math.round(host.clientHeight));
+        setViewport(current => current.width === width && current.height === height
+          ? current
+          : { width, height });
       });
     };
 
     resize();
     const observer = new ResizeObserver(resize);
     observer.observe(host);
-    return () => observer.disconnect();
+    return () => {
+      cancelAnimationFrame(frame);
+      observer.disconnect();
+    };
   }, []);
 
   useEffect(() => {
-    const canvases = [canvasRef.current, previewRef.current, maskRef.current];
-    for (const canvas of canvases) {
-      if (!canvas)
-        continue;
-      if (canvas.width !== pixelWidth)
-        canvas.width = pixelWidth;
-      if (canvas.height !== pixelHeight)
-        canvas.height = pixelHeight;
-    }
-  }, [pixelHeight, pixelWidth]);
-
-  useEffect(() => {
     const mask = maskRef.current;
+    if (mask.width !== pixelWidth)
+      mask.width = pixelWidth;
+    if (mask.height !== pixelHeight)
+      mask.height = pixelHeight;
+
     const maskContext = mask.getContext('2d', { willReadFrequently: true });
     if (!maskContext || pixelWidth < 2 || pixelHeight < 2)
       return;
@@ -360,14 +359,16 @@ export function LetterCanvas({
     <div ref={hostRef} className="canvas-host">
       <canvas
         ref={canvasRef}
+        width={pixelWidth}
+        height={pixelHeight}
         className="letter-canvas letter-canvas-base"
-        style={{ width: viewport.width, height: viewport.height }}
         aria-hidden="true"
       />
       <canvas
         ref={previewRef}
+        width={pixelWidth}
+        height={pixelHeight}
         className={`letter-canvas letter-canvas-preview ${selectedSticker ? 'is-sticker-mode' : ''} ${!selectedSticker && !canDraw ? 'is-disabled' : ''}`}
-        style={{ width: viewport.width, height: viewport.height }}
         aria-label={`Tegneområde til stort og lille ${letter}`}
         onContextMenu={event => event.preventDefault()}
         onPointerDown={pointerDown}
