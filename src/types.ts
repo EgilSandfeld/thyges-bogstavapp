@@ -22,10 +22,9 @@ export interface BrushOptions {
 }
 
 export interface TreeOptions {
-  // Legacy field used by the old renderer. New tree strokes still set it.
   color: TreeColor;
-  leafColor: LeafColor;
-  trunkColor: TrunkColor;
+  leafColor?: LeafColor;
+  trunkColor?: TrunkColor;
   leafShape: LeafShape;
   trunks: TrunkCount;
 }
