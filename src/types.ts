@@ -7,9 +7,13 @@ export type Material = 'brush' | 'water' | 'stone' | 'volcano' | 'tree';
 export type BrushColor = 'pink' | 'purple' | 'red' | 'blue' | 'yellow' | 'green' | 'black';
 export type BrushShape = 'round' | 'flat' | 'chalk';
 export type BrushSize = 'small' | 'medium' | 'large';
+
+// Kept for backwards compatibility with tree strokes saved before version 5.4.
 export type TreeColor = 'pink' | 'purple' | 'red' | 'light-green' | 'dark-green';
-export type LeafShape = 'round' | 'pointed' | 'heart';
-export type TrunkCount = 1 | 2 | 3;
+export type LeafColor = 'lime' | 'red' | 'green' | 'olive' | 'purple' | 'pink';
+export type TrunkColor = 'brown' | 'charcoal' | 'tan' | 'ochre' | 'rust';
+export type LeafShape = 'round' | 'pointed' | 'heart' | 'fan' | 'lance' | 'slender' | 'star';
+export type TrunkCount = 1 | 2 | 3 | 4 | 5;
 
 export interface BrushOptions {
   color: BrushColor;
@@ -18,7 +22,10 @@ export interface BrushOptions {
 }
 
 export interface TreeOptions {
+  // Legacy field used by the old renderer. New tree strokes still set it.
   color: TreeColor;
+  leafColor: LeafColor;
+  trunkColor: TrunkColor;
   leafShape: LeafShape;
   trunks: TrunkCount;
 }
