@@ -11,7 +11,22 @@ createRoot(document.getElementById('root')!).render(
 );
 
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch(() => undefined);
+  let reloading = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (reloading)
+      return;
+    reloading = true;
+    window.location.reload();
+  });
+
+  window.addEventListener('load', async () => {
+    try {
+      const registration = await navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js?v=10`, {
+        updateViaCache: 'none'
+      });
+      await registration.update();
+    } catch {
+      // Appen virker stadig online uden service worker.
+    }
   });
 }
