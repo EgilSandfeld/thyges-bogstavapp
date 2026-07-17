@@ -14,3 +14,10 @@ En legende tegneapp til danske bogstaver, lavet til Thyge.
 - Alle klistermærker vælges fra én samlet oversigt.
 - Der kan tegnes oven på placerede klistermærker.
 - Det store bogstav holdes helt synligt, inklusive bunden.
+
+## Version 5.1
+
+- Canvas fylder hele skærmens bredde.
+- Pynt kan placeres helt ud mod skærmens sider.
+- Bogstaverne er større og centreret som én samlet gruppe.
+- Der er sikker margen under bogstaverne, så bunden ikke skæres af.
