@@ -1,4 +1,15 @@
-import type { Letter, Point, Sticker, StickerKind, Stroke } from '../types';
+import type {
+  BrushColor,
+  BrushOptions,
+  LeafShape,
+  Letter,
+  Point,
+  Sticker,
+  StickerKind,
+  Stroke,
+  TreeColor,
+  TreeOptions
+} from '../types';
 import { getLetterPaths, strokeLetterPaths } from './glyphs';
 import type { LetterPaths } from './glyphs';
 
@@ -43,6 +54,68 @@ export function random(seed: number) {
   return ((value ^ value >>> 14) >>> 0) / 4294967296;
 }
 
+const brushColors: Record<BrushColor, string> = {
+  pink: '#f18bc3',
+  purple: '#8e63d7',
+  red: '#e54848',
+  blue: '#278bd4',
+  yellow: '#f5c842',
+  green: '#56a94c',
+  black: '#2b2b2b'
+};
+
+const treeColors: Record<TreeColor, [string, string, string]> = {
+  pink: ['#f7b7d8', '#ed77b7', '#ca4c97'],
+  purple: ['#c8a8ef', '#9366cf', '#69449f'],
+  red: ['#f39a8f', '#dc5d53', '#ad3934'],
+  'light-green': ['#b9df79', '#80bd55', '#5a963a'],
+  'dark-green': ['#69a45f', '#387a42', '#245932']
+};
+
+function brushSize(options: BrushOptions, minimum: number) {
+  if (options.size === 'small')
+    return Math.max(10, minimum * .024);
+  if (options.size === 'large')
+    return Math.max(28, minimum * .072);
+  return Math.max(18, minimum * .045);
+}
+
+function drawBrush(context: CanvasRenderingContext2D, stroke: Stroke, points: Point[], width: number, height: number) {
+  const options = stroke.brush ?? { color: 'blue', shape: 'round', size: 'medium' };
+  const minimum = Math.min(width, height);
+  const size = brushSize(options, minimum);
+  const color = brushColors[options.color];
+
+  context.save();
+  context.lineJoin = options.shape === 'flat' ? 'bevel' : 'round';
+  context.lineCap = options.shape === 'flat' ? 'square' : 'round';
+  smoothPath(context, points, width, height);
+  context.lineWidth = options.shape === 'chalk' ? size * .92 : size;
+  context.strokeStyle = options.shape === 'chalk' ? `${color}cc` : color;
+  context.stroke();
+
+  if (options.shape === 'flat') {
+    smoothPath(context, points, width, height);
+    context.lineWidth = size * .38;
+    context.strokeStyle = 'rgba(255,255,255,.2)';
+    context.stroke();
+  }
+
+  if (options.shape === 'chalk') {
+    const seed = hash(stroke.id);
+    for (let index = 0; index < points.length; index += 2) {
+      const point = points[index];
+      const px = point.x * width + (random(seed + index * 17) - .5) * size;
+      const py = point.y * height + (random(seed + index * 23) - .5) * size;
+      context.beginPath();
+      context.arc(px, py, Math.max(1, size * (.025 + random(seed + index * 29) * .05)), 0, Math.PI * 2);
+      context.fillStyle = index % 3 ? `${color}9a` : 'rgba(255,255,255,.34)';
+      context.fill();
+    }
+  }
+  context.restore();
+}
+
 function drawWater(context: CanvasRenderingContext2D, stroke: Stroke, points: Point[], width: number, height: number, size: number) {
   smoothPath(context, points, width, height);
   const water = context.createLinearGradient(0, 0, width, height);
@@ -65,7 +138,6 @@ function drawWater(context: CanvasRenderingContext2D, stroke: Stroke, points: Po
     const py = point.y * height + (random(seed + index * 11) - .5) * size * .42;
     const radiusX = size * (.13 + random(seed + index * 13) * .13);
     const radiusY = radiusX * (.22 + random(seed + index * 17) * .2);
-
     context.beginPath();
     context.ellipse(px, py, radiusX, radiusY, (random(seed + index * 19) - .5) * .7, Math.PI * .08, Math.PI * .92);
     context.strokeStyle = 'rgba(225,247,249,.55)';
@@ -92,7 +164,6 @@ function drawStone(context: CanvasRenderingContext2D, stroke: Stroke, points: Po
     const py = point.y * height + (random(seed + index * 17) - .5) * size * .58;
     const radius = size * (.08 + random(seed + index * 23) * .13);
     const vertices = 5 + Math.floor(random(seed + index * 29) * 3);
-
     context.beginPath();
     for (let vertex = 0; vertex < vertices; vertex++) {
       const angle = Math.PI * 2 * vertex / vertices;
@@ -127,12 +198,10 @@ function drawVolcanoCore(context: CanvasRenderingContext2D, stroke: Stroke, poin
   points.forEach((point, index) => {
     if (index % 4)
       return;
-
     const px = point.x * width + (random(seed + index * 13) - .5) * size * .45;
     const py = point.y * height + (random(seed + index * 19) - .5) * size * .45;
-    const relative = Math.max(0, Math.min(1, (py - paths.top) / (paths.bottom - paths.top)));
+    const relative = Math.max(0, Math.min(1, (py - paths.top) / Math.max(1, paths.bottom - paths.top)));
     const radius = size * (.07 + random(seed + index * 29) * .11);
-
     context.beginPath();
     context.ellipse(px, py, radius * 1.2, radius * .72, random(seed + index * 31) * Math.PI, 0, Math.PI * 2);
     context.fillStyle = relative < .32
@@ -145,13 +214,15 @@ function drawVolcanoCore(context: CanvasRenderingContext2D, stroke: Stroke, poin
 function drawTreeCore(context: CanvasRenderingContext2D, stroke: Stroke, points: Point[], width: number, height: number, size: number) {
   smoothPath(context, points, width, height);
   const wood = context.createLinearGradient(0, 0, width, height);
-  wood.addColorStop(0, 'rgba(77,132,60,.94)');
-  wood.addColorStop(.52, 'rgba(103,111,55,.95)');
-  wood.addColorStop(1, 'rgba(121,81,45,.96)');
-  context.lineWidth = size * .92;
+  wood.addColorStop(0, 'rgba(118,82,48,.92)');
+  wood.addColorStop(.5, 'rgba(97,67,40,.96)');
+  wood.addColorStop(1, 'rgba(130,89,50,.94)');
+  context.lineWidth = size * .82;
   context.strokeStyle = wood;
   context.stroke();
 
+  const options = stroke.tree ?? { color: 'dark-green', leafShape: 'round', trunks: 1 };
+  const colors = treeColors[options.color];
   const seed = hash(stroke.id);
   for (let index = 2; index < points.length; index += 5) {
     const point = points[index];
@@ -159,7 +230,7 @@ function drawTreeCore(context: CanvasRenderingContext2D, stroke: Stroke, points:
     const py = point.y * height + (random(seed + index * 23) - .5) * size * .4;
     context.beginPath();
     context.ellipse(px, py, size * .1, size * .16, random(seed + index * 29) * Math.PI, 0, Math.PI * 2);
-    context.fillStyle = index % 10 ? 'rgba(54,139,64,.88)' : 'rgba(116,170,70,.9)';
+    context.fillStyle = colors[index % colors.length];
     context.fill();
   }
 }
@@ -169,11 +240,12 @@ function drawCoreStroke(context: CanvasRenderingContext2D, stroke: Stroke, width
   for (const points of stroke.segments) {
     if (!points.length)
       continue;
-
     context.save();
     context.lineCap = 'round';
     context.lineJoin = 'round';
-    if (stroke.material === 'water')
+    if (stroke.material === 'brush')
+      drawBrush(context, stroke, points, width, height);
+    else if (stroke.material === 'water')
       drawWater(context, stroke, points, width, height, size);
     else if (stroke.material === 'stone')
       drawStone(context, stroke, points, width, height, size);
@@ -193,11 +265,9 @@ function drawVolcanoEffects(context: CanvasRenderingContext2D, stroke: Stroke, w
   const points = flatten(stroke);
   if (points.length < 8)
     return;
-
   const topPoint = points.reduce((best, point) => point.y < best.y ? point : best, points[0]);
   if (topPoint.y > .58)
     return;
-
   const seed = hash(stroke.id);
   const px = topPoint.x * width;
   const py = topPoint.y * height;
@@ -205,7 +275,6 @@ function drawVolcanoEffects(context: CanvasRenderingContext2D, stroke: Stroke, w
   context.save();
   context.lineCap = 'round';
   context.lineJoin = 'round';
-
   context.beginPath();
   context.ellipse(px, py, size * .58, size * .18, 0, 0, Math.PI * 2);
   context.fillStyle = 'rgba(112,73,61,.92)';
@@ -220,14 +289,12 @@ function drawVolcanoEffects(context: CanvasRenderingContext2D, stroke: Stroke, w
     const distance = size * (1.1 + random(seed + index * 19) * 2.6);
     const endX = px + Math.cos(angle) * distance;
     const endY = py + Math.sin(angle) * distance;
-
     context.beginPath();
     context.moveTo(px, py - size * .05);
     context.quadraticCurveTo((px + endX) / 2, endY - size * .55, endX, endY);
     context.strokeStyle = index % 2 ? 'rgba(255,94,25,.9)' : 'rgba(255,211,64,.96)';
     context.lineWidth = Math.max(3, size * (.09 + random(seed + index * 23) * .08));
     context.stroke();
-
     context.beginPath();
     context.arc(endX, endY, size * (.08 + random(seed + index * 29) * .09), 0, Math.PI * 2);
     context.fillStyle = index % 2 ? 'rgba(241,76,22,.92)' : 'rgba(255,204,63,.96)';
@@ -253,72 +320,107 @@ function drawVolcanoEffects(context: CanvasRenderingContext2D, stroke: Stroke, w
   context.restore();
 }
 
+function drawLeaf(context: CanvasRenderingContext2D, shape: LeafShape, x: number, y: number, size: number, angle: number, color: string) {
+  context.save();
+  context.translate(x, y);
+  context.rotate(angle);
+  context.fillStyle = color;
+  context.beginPath();
+  if (shape === 'heart') {
+    context.moveTo(0, size * .34);
+    context.bezierCurveTo(-size * .62, -size * .05, -size * .5, -size * .58, 0, -size * .2);
+    context.bezierCurveTo(size * .5, -size * .58, size * .62, -size * .05, 0, size * .34);
+  } else if (shape === 'pointed') {
+    context.moveTo(-size * .55, 0);
+    context.quadraticCurveTo(0, -size * .42, size * .62, 0);
+    context.quadraticCurveTo(0, size * .42, -size * .55, 0);
+  } else {
+    context.ellipse(0, 0, size * .55, size * .34, 0, 0, Math.PI * 2);
+  }
+  context.fill();
+  context.restore();
+}
+
 function drawTreeEffects(context: CanvasRenderingContext2D, stroke: Stroke, width: number, height: number, size: number) {
   const points = flatten(stroke);
   if (points.length < 5)
     return;
 
+  const options: TreeOptions = stroke.tree ?? { color: 'dark-green', leafShape: 'round', trunks: 1 };
+  const colors = treeColors[options.color];
   const seed = hash(stroke.id);
-  const count = Math.min(5, Math.max(2, Math.floor(points.length / 22)));
+  const basePoint = points.reduce((best, point) => point.y > best.y ? point : best, points[0]);
+  const highestPoint = points.reduce((best, point) => point.y < best.y ? point : best, points[0]);
+  const baseX = basePoint.x * width;
+  const baseY = basePoint.y * height;
+  const targetX = highestPoint.x * width;
+  const targetY = Math.max(height * .035, Math.min(highestPoint.y * height - size, baseY - height * .27));
+  const treeHeight = Math.max(height * .24, baseY - targetY);
+
   context.save();
   context.lineCap = 'round';
   context.lineJoin = 'round';
 
-  for (let treeIndex = 0; treeIndex < count; treeIndex++) {
-    const pointIndex = Math.min(points.length - 1, Math.floor((treeIndex + .5) * points.length / count));
-    const point = points[pointIndex];
-    const baseX = point.x * width;
-    const baseY = point.y * height;
-    const treeHeight = height * (.16 + random(seed + treeIndex * 31) * .2);
-    const lean = (random(seed + treeIndex * 37) - .5) * size * 2.4;
-    const topX = baseX + lean;
-    const topY = Math.max(height * .06, baseY - treeHeight);
+  for (let trunk = 0; trunk < options.trunks; trunk++) {
+    const offset = (trunk - (options.trunks - 1) / 2) * size * .42;
+    const lean = (targetX - baseX) * .42 + (random(seed + trunk * 43) - .5) * size * 1.2;
+    context.beginPath();
+    context.moveTo(baseX + offset, baseY);
+    context.bezierCurveTo(
+      baseX + offset - lean * .18,
+      baseY - treeHeight * .35,
+      targetX + offset + lean * .12,
+      targetY + treeHeight * .22,
+      targetX + offset,
+      targetY
+    );
+    context.strokeStyle = trunk % 2 ? 'rgba(91,58,34,.94)' : 'rgba(116,76,42,.95)';
+    context.lineWidth = size * (.19 + options.trunks * .025);
+    context.stroke();
+  }
 
+  for (let root = 0; root < 7; root++) {
+    const direction = root % 2 ? 1 : -1;
+    const rootX = baseX + direction * size * (.6 + random(seed + root * 61) * 2.3);
+    const rootY = Math.min(height * .98, baseY + size * (.22 + random(seed + root * 67) * .85));
     context.beginPath();
     context.moveTo(baseX, baseY);
-    context.bezierCurveTo(baseX - lean * .2, baseY - treeHeight * .35, topX + lean * .1, topY + treeHeight * .25, topX, topY);
-    context.strokeStyle = 'rgba(104,73,43,.94)';
-    context.lineWidth = size * (.22 + random(seed + treeIndex * 41) * .14);
+    context.quadraticCurveTo((baseX + rootX) / 2, baseY + size * .1, rootX, rootY);
+    context.strokeStyle = 'rgba(117,80,45,.78)';
+    context.lineWidth = size * .085;
     context.stroke();
+  }
 
-    for (let branch = 0; branch < 4; branch++) {
-      const level = .26 + branch * .16;
-      const bx = baseX + lean * level;
-      const by = baseY - treeHeight * level;
-      const direction = branch % 2 ? 1 : -1;
-      const branchX = bx + direction * size * (1.1 + random(seed + treeIndex * 53 + branch) * 1.5);
-      const branchY = by - size * (.5 + random(seed + treeIndex * 59 + branch));
-      context.beginPath();
-      context.moveTo(bx, by);
-      context.quadraticCurveTo((bx + branchX) / 2, branchY + size * .25, branchX, branchY);
-      context.strokeStyle = 'rgba(101,73,44,.9)';
-      context.lineWidth = size * .12;
-      context.stroke();
-    }
+  for (let branch = 0; branch < 7; branch++) {
+    const level = .14 + branch * .1;
+    const bx = targetX + (baseX - targetX) * level;
+    const by = targetY + treeHeight * level;
+    const direction = branch % 2 ? 1 : -1;
+    const branchX = bx + direction * size * (1.4 + random(seed + branch * 71) * 2.4);
+    const branchY = by - size * (.45 + random(seed + branch * 73) * 1.2);
+    context.beginPath();
+    context.moveTo(bx, by);
+    context.quadraticCurveTo((bx + branchX) / 2, branchY + size * .2, branchX, branchY);
+    context.strokeStyle = 'rgba(101,70,42,.9)';
+    context.lineWidth = size * .1;
+    context.stroke();
+  }
 
-    for (let root = 0; root < 5; root++) {
-      const direction = root % 2 ? 1 : -1;
-      const rootX = baseX + direction * size * (.7 + random(seed + treeIndex * 67 + root) * 1.8);
-      const rootY = baseY + size * (.3 + random(seed + treeIndex * 71 + root) * .8);
-      context.beginPath();
-      context.moveTo(baseX, baseY);
-      context.quadraticCurveTo((baseX + rootX) / 2, baseY + size * .12, rootX, rootY);
-      context.strokeStyle = 'rgba(117,80,45,.76)';
-      context.lineWidth = size * .09;
-      context.stroke();
-    }
-
-    const leafColors = ['rgba(44,139,62,.94)', 'rgba(75,167,69,.94)', 'rgba(115,185,72,.92)'];
-    for (let leaf = 0; leaf < 18; leaf++) {
-      const angle = random(seed + treeIndex * 79 + leaf) * Math.PI * 2;
-      const radius = size * (.5 + random(seed + treeIndex * 83 + leaf) * 1.8);
-      const lx = topX + Math.cos(angle) * radius;
-      const ly = topY + Math.sin(angle) * radius * .65;
-      context.beginPath();
-      context.ellipse(lx, ly, size * .24, size * .15, angle, 0, Math.PI * 2);
-      context.fillStyle = leafColors[Math.floor(random(seed + treeIndex * 89 + leaf) * leafColors.length)];
-      context.fill();
-    }
+  const leafCount = 34 + options.trunks * 5;
+  for (let leaf = 0; leaf < leafCount; leaf++) {
+    const angle = random(seed + leaf * 79) * Math.PI * 2;
+    const radius = size * (.45 + random(seed + leaf * 83) * 2.8);
+    const lx = targetX + Math.cos(angle) * radius;
+    const ly = targetY + Math.sin(angle) * radius * .6;
+    drawLeaf(
+      context,
+      options.leafShape,
+      lx,
+      ly,
+      size * (.32 + random(seed + leaf * 89) * .12),
+      angle,
+      colors[Math.floor(random(seed + leaf * 97) * colors.length)]
+    );
   }
   context.restore();
 }
@@ -331,7 +433,7 @@ function drawEffects(context: CanvasRenderingContext2D, stroke: Stroke, width: n
     drawTreeEffects(context, stroke, width, height, size);
 }
 
-const stickerEmoji: Record<StickerKind, string> = {
+export const stickerEmoji: Record<StickerKind, string> = {
   fish: '🐟',
   starfish: '⭐',
   coral: '🪸',
@@ -350,8 +452,12 @@ const stickerEmoji: Record<StickerKind, string> = {
   butterfly: '🦋'
 };
 
+export function stickerRadius(width: number, height: number, sticker: Sticker) {
+  return Math.min(width, height) * .062 * sticker.scale;
+}
+
 function drawSticker(context: CanvasRenderingContext2D, sticker: Sticker, width: number, height: number) {
-  const size = Math.min(width, height) * .09 * sticker.scale;
+  const size = stickerRadius(width, height, sticker) * 1.75;
   context.save();
   context.translate(sticker.x * width, sticker.y * height);
   context.rotate(sticker.rotation);
@@ -391,17 +497,19 @@ export function renderCanvas(
   context.strokeStyle = 'rgba(126,112,91,.13)';
   context.lineWidth = Math.max(2, width * .0025);
   context.beginPath();
-  context.moveTo(width / 2, height * .28);
-  context.lineTo(width / 2, height * .92);
+  context.moveTo(width / 2, height * .1);
+  context.lineTo(width / 2, height * .96);
   context.stroke();
   context.restore();
 
+  stickers.forEach(sticker => drawSticker(context, sticker, width, height));
+
   context.save();
-  context.font = `700 ${Math.max(20, height * .035)}px system-ui, sans-serif`;
+  context.font = `700 ${Math.max(18, height * .028)}px system-ui, sans-serif`;
   context.textAlign = 'center';
   context.fillStyle = 'rgba(83,72,58,.48)';
-  context.fillText('STORT', width * .255, height * .11);
-  context.fillText('lille', width * .745, height * .11);
+  context.fillText('STORT', width * .255, height * .065);
+  context.fillText(letter === 'A' ? 'små a’er' : 'lille', width * .745, height * .065);
   context.restore();
 
   strokeLetterPaths(context, paths, paths.guideWidth * 2.6, 'rgba(255,255,255,.94)');
@@ -420,5 +528,4 @@ export function renderCanvas(
   }
 
   allStrokes.forEach(stroke => drawEffects(context, stroke, width, height));
-  stickers.forEach(sticker => drawSticker(context, sticker, width, height));
 }
