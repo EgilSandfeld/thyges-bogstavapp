@@ -107,36 +107,47 @@ function doubleStoreyAPath(left: number, top: number, size: number) {
 
 export function getLetterPaths(letter: Letter, width: number, height: number): LetterPaths {
   const minimum = Math.min(width, height);
-  const upperSize = Math.min(width * .47, height * .76);
-  const upperTop = Math.max(height * .12, height * .58 - upperSize * .5);
-  const upperLeft = width * .27 - upperSize * .5;
+  const topMargin = height * .075;
+  const bottomMargin = height * .105;
+  const usableHeight = height - topMargin - bottomMargin;
 
   if (letter === 'A') {
-    const smallSize = Math.min(width * .29, height * .36);
-    const rightCenter = width * .73;
-    const alternateTop = height * .2;
-    const lowerTop = height * .57;
+    const upperSize = Math.min(width * .49, usableHeight * .9);
+    const smallSize = Math.min(width * .265, usableHeight * .42);
+    const gap = Math.max(width * .035, minimum * .035);
+    const groupWidth = upperSize + gap + smallSize;
+    const groupLeft = (width - groupWidth) * .5;
+    const upperTop = topMargin + (usableHeight - upperSize) * .52;
+    const alternateTop = topMargin + usableHeight * .04;
+    const lowerTop = topMargin + usableHeight - smallSize * 1.08;
+
     return {
-      uppercase: glyphPath(letter, false, upperLeft, upperTop, upperSize, upperSize),
-      alternateLowercase: doubleStoreyAPath(rightCenter - smallSize * .5, alternateTop, smallSize),
-      lowercase: glyphPath(letter, true, rightCenter - smallSize * .5, lowerTop, smallSize, smallSize),
+      uppercase: glyphPath(letter, false, groupLeft, upperTop, upperSize, upperSize),
+      alternateLowercase: doubleStoreyAPath(groupLeft + upperSize + gap, alternateTop, smallSize),
+      lowercase: glyphPath(letter, true, groupLeft + upperSize + gap, lowerTop, smallSize, smallSize),
       guideWidth: Math.max(4, minimum * .0065),
       toleranceWidth: Math.max(28, minimum * .062),
       top: Math.min(upperTop, alternateTop),
-      bottom: Math.min(height * .96, Math.max(upperTop + upperSize, lowerTop + smallSize * 1.15))
+      bottom: Math.max(upperTop + upperSize, lowerTop + smallSize * 1.03)
     };
   }
 
-  const lowerSize = Math.min(width * .42, height * .61);
-  const lowerTop = Math.max(height * .22, height * .59 - lowerSize * .45);
-  const lowerLeft = width * .73 - lowerSize * .5;
+  const upperSize = Math.min(width * .455, usableHeight * .92);
+  const lowerSize = Math.min(width * .405, usableHeight * .72);
+  const gap = Math.max(width * .03, minimum * .03);
+  const groupWidth = upperSize + gap + lowerSize;
+  const groupLeft = (width - groupWidth) * .5;
+  const upperTop = topMargin + (usableHeight - upperSize) * .55;
+  const descenderFactor = ['G', 'J', 'P', 'Q', 'Y'].includes(letter) ? 1.3 : 1.04;
+  const lowerTop = topMargin + usableHeight - lowerSize * descenderFactor;
+
   return {
-    uppercase: glyphPath(letter, false, upperLeft, upperTop, upperSize, upperSize),
-    lowercase: glyphPath(letter, true, lowerLeft, lowerTop, lowerSize, lowerSize),
+    uppercase: glyphPath(letter, false, groupLeft, upperTop, upperSize, upperSize),
+    lowercase: glyphPath(letter, true, groupLeft + upperSize + gap, lowerTop, lowerSize, lowerSize),
     guideWidth: Math.max(4, minimum * .0065),
     toleranceWidth: Math.max(28, minimum * .062),
     top: Math.min(upperTop, lowerTop),
-    bottom: Math.min(height * .96, Math.max(upperTop + upperSize, lowerTop + lowerSize * 1.18))
+    bottom: Math.max(upperTop + upperSize, lowerTop + lowerSize * descenderFactor)
   };
 }
 
