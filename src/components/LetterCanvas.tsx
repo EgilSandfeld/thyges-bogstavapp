@@ -1,8 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
-import type { Letter, Material, Point, Sticker, StickerKind, Stroke } from '../types';
+import type {
+  BrushOptions,
+  Letter,
+  Material,
+  Point,
+  Sticker,
+  StickerKind,
+  Stroke,
+  TreeOptions
+} from '../types';
 import { getLetterPaths, strokeLetterPaths } from './glyphs';
-import { random, renderCanvas } from './materials';
+import { random, renderCanvas, stickerRadius } from './materials';
 
 interface Props {
   letter: Letter;
@@ -10,6 +19,9 @@ interface Props {
   selectedSticker: StickerKind | null;
   strokes: Stroke[];
   stickers: Sticker[];
+  brushOptions?: BrushOptions;
+  treeOptions?: TreeOptions;
+  canDraw: boolean;
   onStrokesChange: (strokes: Stroke[]) => void;
   onStickerAdd: (sticker: Sticker) => void;
 }
@@ -19,10 +31,12 @@ interface Viewport {
   height: number;
 }
 
-function createStroke(material: Material): Stroke {
+function createStroke(material: Material, brushOptions?: BrushOptions, treeOptions?: TreeOptions): Stroke {
   return {
     id: globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`,
     material,
+    brush: material === 'brush' ? brushOptions : undefined,
+    tree: material === 'tree' ? treeOptions : undefined,
     segments: [[]],
     createdAt: Date.now()
   };
@@ -34,6 +48,9 @@ export function LetterCanvas({
   selectedSticker,
   strokes,
   stickers,
+  brushOptions,
+  treeOptions,
+  canDraw,
   onStrokesChange,
   onStickerAdd
 }: Props) {
@@ -89,6 +106,15 @@ export function LetterCanvas({
     const paths = getLetterPaths(letter, width, height);
     maskContext.clearRect(0, 0, width, height);
     strokeLetterPaths(maskContext, paths, paths.toleranceWidth, '#ffffff');
+
+    maskContext.fillStyle = '#ffffff';
+    for (const sticker of stickers) {
+      const radius = stickerRadius(width, height, sticker) * 1.22;
+      maskContext.beginPath();
+      maskContext.arc(sticker.x * width, sticker.y * height, radius, 0, Math.PI * 2);
+      maskContext.fill();
+    }
+
     maskPixelsRef.current = maskContext.getImageData(0, 0, width, height);
     renderCanvas(canvas, maskRef.current, letter, strokes, stickers, draft);
   }, [draft, letter, stickers, strokes, viewport]);
@@ -103,7 +129,7 @@ export function LetterCanvas({
     lastPointer.current = null;
   }, [letter]);
 
-  function pointFromEvent(event: ReactPointerEvent<HTMLCanvasElement>) {
+  function pointFromEvent(event: ReactPointerEvent<HTMLCanvasElement>): Point {
     const canvas = canvasRef.current!;
     const rect = canvas.getBoundingClientRect();
     return {
@@ -179,10 +205,13 @@ export function LetterCanvas({
       return;
     }
 
+    if (!canDraw)
+      return;
+
     event.currentTarget.setPointerCapture(event.pointerId);
     activePointer.current = event.pointerId;
     lastPointer.current = point;
-    setDraft(appendSamples(createStroke(material), [point]));
+    setDraft(appendSamples(createStroke(material, brushOptions, treeOptions), [point]));
   }
 
   function pointerMove(event: ReactPointerEvent<HTMLCanvasElement>) {
@@ -219,7 +248,7 @@ export function LetterCanvas({
     <div ref={hostRef} className="canvas-host">
       <canvas
         ref={canvasRef}
-        className={`letter-canvas ${selectedSticker ? 'is-sticker-mode' : ''}`}
+        className={`letter-canvas ${selectedSticker ? 'is-sticker-mode' : ''} ${!selectedSticker && !canDraw ? 'is-disabled' : ''}`}
         style={{ width: viewport.width, height: viewport.height }}
         aria-label={`Tegneområde til stort og lille ${letter}`}
         onContextMenu={event => event.preventDefault()}
