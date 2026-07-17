@@ -1,0 +1,22 @@
+.compact-tool.material-crystal.is-selected {
+  background: #dacfff;
+  box-shadow: inset 0 -3px 0 #8d6bd7, 0 0 0 3px #fff, 0 0 0 5px #8d6bd7;
+}
+
+.material-popover {
+  width: min(570px, calc(100vw - 28px));
+}
+
+.material-choice-icon {
+  min-width: 24px;
+  font-size: 1.15rem;
+  text-align: center;
+}
+
+.sticker-modal-v55 {
+  width: min(900px, calc(100vw - 28px));
+}
+
+.sticker-modal-v55 .sticker-grid {
+  grid-template-columns: repeat(auto-fit, minmax(105px, 1fr));
+}

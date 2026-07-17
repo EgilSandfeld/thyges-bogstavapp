@@ -1,12 +1,13 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import AppV54 from './AppV54';
+import AppV55 from './AppV55';
 import './styles.css';
 import './layout-v51.css';
+import './features-v55.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <AppV54 />
+    <AppV55 />
   </StrictMode>
 );
 
@@ -21,7 +22,7 @@ if ('serviceWorker' in navigator) {
 
   window.addEventListener('load', async () => {
     try {
-      const registration = await navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js?v=11`, {
+      const registration = await navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js?v=12`, {
         updateViaCache: 'none'
       });
       await registration.update();

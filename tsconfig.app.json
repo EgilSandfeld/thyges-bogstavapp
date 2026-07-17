@@ -17,5 +17,15 @@
     "jsx": "react-jsx",
     "types": ["vite/client"]
   },
-  "include": ["src"]
+  "include": [
+    "src/main.tsx",
+    "src/AppV55.tsx",
+    "src/components/LetterCanvasV55.tsx",
+    "src/components/renderingV55.ts",
+    "src/components/v55/*.ts",
+    "src/components/glyphs.ts",
+    "src/db.ts",
+    "src/types.ts",
+    "src/**/*.d.ts"
+  ]
 }

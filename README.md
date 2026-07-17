@@ -42,3 +42,11 @@ En legende tegneapp til danske bogstaver, lavet til Thyge.
 - Der kan vælges fra én til fem stammer.
 - Alle valgte stammer vokser fra præcis samme rodpunkt.
 - Når træet males nedefra, bruges det første malede punkt som stammernes fælles udgangspunkt.
+
+## Version 5.5
+
+- Træstammer er betydeligt tykkere, bredest ved roden og smallere opad.
+- Træerne har større og tættere blade.
+- Stenmaterialet har fem valgbare stentyper.
+- Krystal er et selvstændigt materiale med fem former og seks farver.
+- Klistermærkeudvalget er fordoblet fra 16 til 32.
