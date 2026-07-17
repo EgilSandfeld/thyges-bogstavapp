@@ -28,3 +28,17 @@ En legende tegneapp til danske bogstaver, lavet til Thyge.
 - Tegning vises på et separat preview-lag, så klistermærker ikke gentegnes ved hver fingerbevægelse.
 - Bogstavmasken genberegnes kun, når bogstav, størrelse eller klistermærker ændres.
 - Canvas-opløsningen er optimeret til tablets med mange klistermærker.
+
+## Version 5.3
+
+- Canvas og bogstavgeometri bruger samme 1:1-størrelse.
+- Bogstavskift bruger kun fade og strækker ikke bogstaverne.
+- Service worker henter nye versioner uden at genbruge den gamle appskal.
+
+## Version 5.4
+
+- Fem bladformer baseret på Thyris tegning.
+- Seks bladfarver og fem separate stammefarver.
+- Der kan vælges fra én til fem stammer.
+- Alle valgte stammer vokser fra præcis samme rodpunkt.
+- Når træet males nedefra, bruges det første malede punkt som stammernes fælles udgangspunkt.
