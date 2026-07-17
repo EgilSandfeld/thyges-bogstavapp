@@ -21,3 +21,10 @@ En legende tegneapp til danske bogstaver, lavet til Thyge.
 - Pynt kan placeres helt ud mod skærmens sider.
 - Bogstaverne er større og centreret som én samlet gruppe.
 - Der er sikker margen under bogstaverne, så bunden ikke skæres af.
+
+## Version 5.2
+
+- Bogstavskift bevarer bogstavernes proportioner uden vandret stræk.
+- Tegning vises på et separat preview-lag, så klistermærker ikke gentegnes ved hver fingerbevægelse.
+- Bogstavmasken genberegnes kun, når bogstav, størrelse eller klistermærker ændres.
+- Canvas-opløsningen er optimeret til tablets med mange klistermærker.
