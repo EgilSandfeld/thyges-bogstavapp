@@ -1,4 +1,4 @@
-/* Version 5.1: use the full viewport for the drawing surface. */
+/* Version 5.2: full-width canvas without stretching letter proportions. */
 .app-shell {
   padding-left: 0;
   padding-right: 0;
@@ -23,6 +23,32 @@
 .letter-canvas {
   width: 100% !important;
   max-width: none !important;
+}
+
+.canvas-host {
+  position: relative;
+  overflow: hidden;
+}
+
+.letter-canvas {
+  position: absolute;
+  inset: 0;
+}
+
+.letter-canvas-base {
+  pointer-events: none;
+}
+
+.letter-canvas-preview {
+  background: transparent;
+  box-shadow: none;
+}
+
+@keyframes clay-morph {
+  0% { opacity: .2; filter: blur(7px); transform: translateY(10px) scale(.9) rotate(-1deg); }
+  42% { opacity: .72; filter: blur(2.5px); transform: translateY(-2px) scale(1.025) rotate(.5deg); }
+  72% { opacity: .94; filter: blur(.6px); transform: translateY(1px) scale(.985); }
+  100% { opacity: 1; filter: none; transform: translateY(0) scale(1); }
 }
 
 @media (max-width: 700px) {
