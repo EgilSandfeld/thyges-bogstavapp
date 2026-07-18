@@ -35,7 +35,7 @@ jobs:
           script: |
             const owner = context.repo.owner;
             const repo = context.repo.repo;
-            const ref = context.ref === 'refs/heads/main' ? 'heads/built-v6' : 'heads/built-v6-candidate';
+            const ref = context.ref === 'refs/heads/main' ? 'heads/built-v6' : 'heads/built-v6-candidate-fresh';
             try {
               await github.rest.git.updateRef({ owner, repo, ref, sha: context.sha, force: true });
             } catch (error) {
@@ -48,10 +48,10 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git checkout -B failed-v6-log
+          git checkout -B failed-v6-log-fresh
           git add -f build.log
-          git commit -m "Version 6 candidate build error"
-          git push --force origin HEAD:refs/heads/failed-v6-log
+          git commit -m "Version 6 fresh candidate build error"
+          git push --force origin HEAD:refs/heads/failed-v6-log-fresh
       - name: Mark failed build
         if: failure()
         uses: actions/github-script@v7
@@ -59,7 +59,7 @@ jobs:
           script: |
             const owner = context.repo.owner;
             const repo = context.repo.repo;
-            const ref = context.ref === 'refs/heads/main' ? 'heads/failed-v6' : 'heads/failed-v6-candidate';
+            const ref = context.ref === 'refs/heads/main' ? 'heads/failed-v6' : 'heads/failed-v6-candidate-fresh';
             try {
               await github.rest.git.updateRef({ owner, repo, ref, sha: context.sha, force: true });
             } catch (error) {
