@@ -20,6 +20,9 @@
   "include": [
     "src/main.tsx",
     "src/AppV55.tsx",
+    "src/AppV6.tsx",
+    "src/Version6Controls.tsx",
+    "src/version6State.ts",
     "src/components/LetterCanvasV55.tsx",
     "src/components/renderingV55.ts",
     "src/components/v55/*.ts",
