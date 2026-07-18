@@ -50,3 +50,12 @@ En legende tegneapp til danske bogstaver, lavet til Thyge.
 - Stenmaterialet har fem valgbare stentyper.
 - Krystal er et selvstændigt materiale med fem former og seks farver.
 - Klistermærkeudvalget er fordoblet fra 16 til 32.
+
+## Version 6
+
+- Appen bruger fra nu af kun hele versionsnumre.
+- Træmaterialet har stammetykkelserne smal, mellem og tyk.
+- Trætyperne eg, birk, bøg og ahorn har forskellige barkmønstre og bladformer.
+- Birk har lys bark med mørke striber, bøg har glat grå bark, og eg og ahorn har deres egne teksturer.
+- Kirsebær, kastanjer, kastanjer i pigget skal, bog og bog i pigget skal kan placeres på tegningen.
+- Frugter og nødder har egne knapper til fortryd og rydning.
