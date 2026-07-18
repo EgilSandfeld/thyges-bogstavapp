@@ -24,7 +24,10 @@ jobs:
           node-version: 22
       - run: npm install
       - id: production-build
-        run: npm run build
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run build 2>&1 | tee build.log
       - name: Mark successful build
         if: success()
         uses: actions/github-script@v7
@@ -39,6 +42,16 @@ jobs:
               if (error.status !== 404 && error.status !== 422) throw error;
               await github.rest.git.createRef({ owner, repo, ref: `refs/${ref}`, sha: context.sha });
             }
+      - name: Save failed candidate build log
+        if: failure() && github.ref == 'refs/heads/version-6-build'
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B failed-v6-log
+          git add -f build.log
+          git commit -m "Version 6 candidate build error"
+          git push --force origin HEAD:refs/heads/failed-v6-log
       - name: Mark failed build
         if: failure()
         uses: actions/github-script@v7
