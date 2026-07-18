@@ -2,7 +2,7 @@ import type { Letter, Sticker, StickerKindV55, Stroke } from '../types';
 import { getLetterPaths, strokeLetterPaths } from './glyphs';
 import { random } from './v55/common';
 import { brushColors, crystalPalettes, drawNonTreeCore, stoneBase } from './v55/materialRenderers';
-import { drawTreeCore, drawTreeEffects, trunkPalettes } from './v55/treeRenderer';
+import { renderTreeStrokesV55, trunkPalettes } from './v55/treeRenderer';
 
 export { random };
 
@@ -107,12 +107,9 @@ export function renderCanvasV55(
   paint.width = width;
   paint.height = height;
   const paintContext = paint.getContext('2d');
-  const size = Math.max(18, Math.min(width, height) * .04);
   if (paintContext) {
     strokes.forEach(stroke => {
-      if (stroke.material === 'tree')
-        drawTreeCore(paintContext, stroke, width, height, size);
-      else
+      if (stroke.material !== 'tree')
         drawNonTreeCore(paintContext, stroke, width, height, paths);
     });
     paintContext.globalCompositeOperation = 'destination-in';
@@ -120,10 +117,7 @@ export function renderCanvasV55(
     context.drawImage(paint, 0, 0);
   }
 
-  strokes.forEach(stroke => {
-    if (stroke.material === 'tree')
-      drawTreeEffects(context, stroke, width, height, size);
-  });
+  renderTreeStrokesV55(canvas, mask, strokes);
 }
 
 export function previewColor(stroke: Stroke) {
