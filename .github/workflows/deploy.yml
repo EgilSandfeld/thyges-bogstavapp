@@ -2,7 +2,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches: [main, version-6-build]
   workflow_dispatch:
 
 permissions:
@@ -11,7 +11,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
+  group: pages-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -32,7 +32,7 @@ jobs:
           script: |
             const owner = context.repo.owner;
             const repo = context.repo.repo;
-            const ref = 'heads/built-v55';
+            const ref = context.ref === 'refs/heads/main' ? 'heads/built-v6' : 'heads/built-v6-candidate';
             try {
               await github.rest.git.updateRef({ owner, repo, ref, sha: context.sha, force: true });
             } catch (error) {
@@ -46,7 +46,7 @@ jobs:
           script: |
             const owner = context.repo.owner;
             const repo = context.repo.repo;
-            const ref = 'heads/failed-v55';
+            const ref = context.ref === 'refs/heads/main' ? 'heads/failed-v6' : 'heads/failed-v6-candidate';
             try {
               await github.rest.git.updateRef({ owner, repo, ref, sha: context.sha, force: true });
             } catch (error) {
@@ -54,15 +54,16 @@ jobs:
               await github.rest.git.createRef({ owner, repo, ref: `refs/${ref}`, sha: context.sha });
             }
       - uses: actions/configure-pages@v5
-        if: success()
+        if: success() && github.ref == 'refs/heads/main'
         with:
           enablement: true
       - uses: actions/upload-pages-artifact@v3
-        if: success()
+        if: success() && github.ref == 'refs/heads/main'
         with:
           path: dist
 
   deploy:
+    if: github.ref == 'refs/heads/main'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -78,7 +79,7 @@ jobs:
           script: |
             const owner = context.repo.owner;
             const repo = context.repo.repo;
-            const ref = 'heads/deployed-v55';
+            const ref = 'heads/deployed-v6';
             try {
               await github.rest.git.updateRef({ owner, repo, ref, sha: context.sha, force: true });
             } catch (error) {
